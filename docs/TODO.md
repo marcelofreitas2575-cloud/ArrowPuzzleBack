@@ -1,5 +1,13 @@
 # Pendências técnicas (local / roadmap)
 
+## CI/CD
+
+**Status (fase 1):** GitHub Actions [`.github/workflows/dotnet-ci.yml`](../.github/workflows/dotnet-ci.yml) — `dotnet restore/build/test` + `docker compose config` em push/PR na `main`.
+
+**Próximo:** badge no README; Android `assembleDebug` (opcional, job separado ou só `main`); E2E Compose (self-hosted runner ou manual).
+
+**CD:** após decisão AWS — build imagens, ECR, deploy (fora do escopo local-first).
+
 ## Docker Compose (organização)
 
 **Status:** feito — stack em [deploy/docker/docker-compose.yml](../deploy/docker/docker-compose.yml); overlay de diagnóstico [docker-compose.direct-grpc.yml](../deploy/docker/docker-compose.direct-grpc.yml); legados em [deploy/docker/archive/](../deploy/docker/archive/). Guia: [deploy/docker/README.md](../deploy/docker/README.md).

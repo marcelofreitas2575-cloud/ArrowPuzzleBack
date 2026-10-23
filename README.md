@@ -40,6 +40,10 @@ docs/              ADR, C4, nome comercial
 
 Detalhes: [`services/README.md`](services/README.md), [`shared/README.md`](shared/README.md).
 
+## CI
+
+Push/PR na branch `main` disparam [.github/workflows/dotnet-ci.yml](.github/workflows/dotnet-ci.yml) (build + testes .NET e validação do Compose).
+
 ## Build (.NET)
 
 Requisito: [.NET SDK 10](https://dotnet.microsoft.com/download) (versão fixada em [`global.json`](global.json)).
