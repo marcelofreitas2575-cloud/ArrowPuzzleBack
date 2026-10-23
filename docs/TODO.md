@@ -34,6 +34,12 @@
 
 **Fora de escopo:** arquivos JSON de nível no repositório ou catálogo estático.
 
+## Cobertura de testes (item 12)
+
+**Status:** ampliado — projetos de teste em **Domain/Application** (Level Catalog, Gateway handlers, Player Progress, Game Session) + `ProceduralLevelSolvabilityGuard`; catálogo procedural 001–040 permanece no CI.
+
+**Fora de escopo por ora:** testes de Api/Infrastructure com DynamoDB real, Dapr sidecar E2E, Android unit/instrumented.
+
 ## Player Progress (Android)
 
 **Status:** app usa `GET/POST /api/v1/me/progress` (convidado OIDC → DynamoDB via Player Progress). `LocalProgressStore` só cache do nível jogável.

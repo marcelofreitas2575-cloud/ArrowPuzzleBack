@@ -51,7 +51,7 @@ Requisito: [.NET SDK 10](https://dotnet.microsoft.com/download) (versão fixada 
 ```powershell
 dotnet restore ArrowPuzzle.sln
 dotnet build ArrowPuzzle.sln
-dotnet test services/GameSession/ArrowPuzzle.GameSession.Domain.Tests/ArrowPuzzle.GameSession.Domain.Tests.csproj
+dotnet test ArrowPuzzle.sln
 ```
 
 ## Como rodar (local)

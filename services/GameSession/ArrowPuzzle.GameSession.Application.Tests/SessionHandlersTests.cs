@@ -76,6 +76,14 @@ public class SessionHandlersTests
     }
 
     [Fact]
+    public async Task GetSession_WhenMissing_ReturnsNull()
+    {
+        var mediator = CreateMediator();
+        var result = await mediator.Send(new GetSessionQuery(SessionId.New()));
+        Assert.Null(result);
+    }
+
+    [Fact]
     public async Task ApplyMove_WhenSessionMissing_Throws()
     {
         var mediator = CreateMediator();

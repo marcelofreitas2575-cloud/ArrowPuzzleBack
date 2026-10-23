@@ -28,6 +28,35 @@ public class ProgressHandlersTests
         Assert.Empty(state.CompletedLevelIds);
     }
 
+    [Theory]
+    [InlineData("")]
+    [InlineData("   ")]
+    public async Task GetProgress_EmptyUserId_Throws(string userId)
+    {
+        var mediator = CreateMediator();
+        await Assert.ThrowsAsync<ArgumentException>(() => mediator.Send(new GetProgressQuery(userId)));
+    }
+
+    [Theory]
+    [InlineData("")]
+    [InlineData("   ")]
+    public async Task CompleteLevel_EmptyUserId_Throws(string userId)
+    {
+        var mediator = CreateMediator();
+        await Assert.ThrowsAsync<ArgumentException>(() =>
+            mediator.Send(new CompleteLevelCommand(userId, "001")));
+    }
+
+    [Theory]
+    [InlineData("")]
+    [InlineData("   ")]
+    public async Task CompleteLevel_EmptyLevelId_Throws(string levelId)
+    {
+        var mediator = CreateMediator();
+        await Assert.ThrowsAsync<ArgumentException>(() =>
+            mediator.Send(new CompleteLevelCommand("user-1", levelId)));
+    }
+
     [Fact]
     public async Task CompleteLevel_ThenGetProgress_IncludesLevel()
     {
