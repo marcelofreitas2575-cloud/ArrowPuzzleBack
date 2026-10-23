@@ -1,0 +1,5 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <ItemGroup>
+    <ProjectReference Include="..\..\GameSession\ArrowPuzzle.GameSession.Domain\ArrowPuzzle.GameSession.Domain.csproj" />
+  </ItemGroup>
+</Project>

@@ -1,0 +1,43 @@
+---
+description: Padrões de arquitetura, naming e qualidade do Arrow Puzzle (.NET + Android)
+alwaysApply: true
+---
+
+# Arrow Puzzle — convenções do projeto
+
+## Nome comercial vs identificadores técnicos
+
+- O **nome do jogo** (homenagem / marketing) existe **apenas** em [docs/PRODUCT_DISPLAY_NAME.md](docs/PRODUCT_DISPLAY_NAME.md) e, quando necessário, em strings de UI lidas de config (Android `BuildConfig` / recursos, BFF `ProductOptions`).
+- **Proibido** usar o nome comercial (ex.: Sophia) em: namespaces .NET, assemblies, pacotes Protobuf, nomes de serviços Docker, app-ids Dapr, realm/clients Keycloak, chaves DynamoDB, IAM, Terraform, pacotes Kotlin, applicationId base.
+- Prefixos técnicos estáveis: `ArrowPuzzle` (.NET), `arrowpuzzle` / `arrow-puzzle` (proto, HTTP, OIDC), `com.arrowpuzzle` (Android applicationId).
+
+## Arquitetura (obrigatório)
+
+- Microsserviços com **hexagonal**: Domain → Application (ports) → Infrastructure (adapters) → Api.
+- **SOLID**; casos de uso via **MediatR** na camada Application.
+- Comunicação entre serviços: **gRPC** + contratos em `shared/Protos`.
+- BFF (Gateway): orquestração, JWT **OIDC** (Keycloak local; Cognito futuro via config).
+- Resiliência: **Polly** nos clientes gRPC do BFF; **Dapr** quando a camada de compose estiver ativa.
+- Auth agnóstica ao IdP: `Authority`, audience, JWKS por configuração.
+
+## Persistência e dados
+
+- **Sem SQL no código**: nada de ADO.NET SQL, Dapper, strings SQL, migrations SQL.
+- Persistência: **Amazon DynamoDB** (SDK / abstrações de repositório) ou stores in-memory/local em dev.
+- Assets de nível: JSON/S3 ou filesystem em dev; catálogo via **LevelCatalog**.
+
+## Qualidade de código
+
+- **Clean code**: nomes claros, métodos pequenos, early return, evitar classes “Deus”.
+- Comentários só para regras de negócio não óbvias ou invariantes.
+- Testes unitários no **Domain** e **Application** (xUnit); domínio sem dependências externas.
+- Níveis publicados devem passar por **validação de solvabilidade** (solver) quando o pipeline de catálogo existir.
+
+## Documentação (repositório)
+
+- Tom profissional; ADRs em `docs/adr/`; sem referências a contexto corporativo pessoal.
+- Decisões técnicas documentadas; nome comercial não aparece em ADRs salvo citação a `PRODUCT_DISPLAY_NAME.md`.
+
+## Escopo cloud
+
+- **Local first** até decisão explícita em TODO AWS; nada de recursos corporativos (contas, Git, BD).

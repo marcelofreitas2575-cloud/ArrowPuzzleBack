@@ -1,0 +1,29 @@
+syntax = "proto3";
+
+package arrowpuzzle.playerprogress.v1;
+
+option csharp_namespace = "ArrowPuzzle.Protos.PlayerProgress.V1";
+
+service PlayerProgressService {
+  rpc GetProgress(GetProgressRequest) returns (GetProgressResponse);
+  rpc CompleteLevel(CompleteLevelRequest) returns (CompleteLevelResponse);
+}
+
+message GetProgressRequest {
+  string user_id = 1;
+}
+
+message GetProgressResponse {
+  string user_id = 1;
+  repeated string completed_level_ids = 2;
+}
+
+message CompleteLevelRequest {
+  string user_id = 1;
+  string level_id = 2;
+}
+
+message CompleteLevelResponse {
+  string user_id = 1;
+  repeated string completed_level_ids = 2;
+}

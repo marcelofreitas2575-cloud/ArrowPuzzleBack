@@ -1,0 +1,38 @@
+---
+description: Usar caminhos absolutos em comandos, docs e instruções ao usuário
+alwaysApply: true
+---
+
+# Caminhos absolutos (obrigatório)
+
+Ao orientar o usuário, escrever scripts ou sugerir comandos no terminal, **sempre use o caminho completo** no disco — não use atalhos relativos como `cd deploy\docker` sem o prefixo do repositório.
+
+## Raiz do repositório
+
+`c:\Marcelo\Pessoal\Estudos\SophiaArrowPuzzle`
+
+## Pastas usadas com frequência
+
+| Atalho relativo | Caminho absoluto |
+|-----------------|------------------|
+| `deploy\docker` | `c:\Marcelo\Pessoal\Estudos\SophiaArrowPuzzle\deploy\docker` |
+| `android` | `c:\Marcelo\Pessoal\Estudos\SophiaArrowPuzzle\android` |
+| `deploy\keycloak` | `c:\Marcelo\Pessoal\Estudos\SophiaArrowPuzzle\deploy\keycloak` |
+
+## Exemplo
+
+Preferir:
+
+```powershell
+cd c:\Marcelo\Pessoal\Estudos\SophiaArrowPuzzle\deploy\docker
+docker compose up -d gateway
+```
+
+Em vez de:
+
+```powershell
+cd deploy\docker
+docker compose up -d gateway
+```
+
+Links markdown para arquivos do repo podem usar caminho relativo ao repositório (ex. `deploy/docker/CONFIGURAR_GOOGLE.md`); **comandos shell e instruções “onde abrir arquivo”** devem usar o caminho absoluto acima quando o contexto for a máquina local do usuário.

@@ -1,0 +1,11 @@
+**/.git
+**/.vs
+**/.vscode
+**/.cursor
+**/bin
+**/obj
+**/node_modules
+**/*.user
+**/*.suo
+**/agent-tools
+**/terminals

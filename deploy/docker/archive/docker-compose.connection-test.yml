@@ -1,0 +1,31 @@
+# Arquivado — preferir stack principal ou run-gateway-lan.ps1 (ver deploy/docker/CONNECTION_TEST.md).
+#
+#   cd c:\Marcelo\Pessoal\Estudos\SophiaArrowPuzzle\deploy\docker\archive
+#   docker compose -f docker-compose.connection-test.yml up -d --build
+
+name: arrow-puzzle-connection-test
+
+services:
+  gateway:
+    build:
+      context: ../../..
+      dockerfile: deploy/docker/gateway.Dockerfile
+    environment:
+      ASPNETCORE_URLS: http://+:5100
+      Dapr__Enabled: "false"
+      Services__GameSession: http://127.0.0.1:5101
+      Services__LevelCatalog: http://127.0.0.1:5102
+      Services__PlayerProgress: http://127.0.0.1:5103
+      Product__DisplayName: ${PRODUCT_DISPLAY_NAME:-Arrow Puzzle}
+      KeycloakDevAuth__Enabled: "false"
+      Authentication__Jwt__Authority: http://dev-disabled.local/realms/arrow-puzzle
+      Authentication__Jwt__RequireHttpsMetadata: "false"
+      Authentication__Jwt__ValidIssuers__0: http://dev-disabled.local/realms/arrow-puzzle
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS http://127.0.0.1:5100/health || exit 1"]
+      interval: 5s
+      timeout: 3s
+      retries: 8
+      start_period: 15s
+    ports:
+      - "5100:5100"

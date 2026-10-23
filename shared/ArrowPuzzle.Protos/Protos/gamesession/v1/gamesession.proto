@@ -1,0 +1,78 @@
+syntax = "proto3";
+
+package arrowpuzzle.gamesession.v1;
+
+option csharp_namespace = "ArrowPuzzle.Protos.GameSession.V1";
+
+service GameSessionService {
+  rpc CreateSession(CreateSessionRequest) returns (CreateSessionResponse);
+  rpc ApplyMove(ApplyMoveRequest) returns (ApplyMoveResponse);
+  rpc GetSession(GetSessionRequest) returns (GetSessionResponse);
+}
+
+enum Direction {
+  DIRECTION_UNSPECIFIED = 0;
+  DIRECTION_UP = 1;
+  DIRECTION_RIGHT = 2;
+  DIRECTION_DOWN = 3;
+  DIRECTION_LEFT = 4;
+}
+
+enum SlideOutcome {
+  SLIDE_OUTCOME_UNSPECIFIED = 0;
+  SLIDE_OUTCOME_ARROW_NOT_FOUND = 1;
+  SLIDE_OUTCOME_BLOCKED_AT_START = 2;
+  SLIDE_OUTCOME_MOVED_AND_STOPPED = 3;
+  SLIDE_OUTCOME_EXITED_BOARD = 4;
+}
+
+message Board {
+  int32 width = 1;
+  int32 height = 2;
+  repeated Arrow arrows = 3;
+}
+
+message GridCell {
+  int32 row = 1;
+  int32 column = 2;
+}
+
+message Arrow {
+  string id = 1;
+  int32 head_row = 2;
+  int32 head_column = 3;
+  Direction direction = 4;
+  int32 length = 5;
+  // Orthogonal polyline, tail to head (head is last). Empty = straight body behind head.
+  repeated GridCell path = 6;
+}
+
+message CreateSessionRequest {
+  Board initial_board = 1;
+}
+
+message CreateSessionResponse {
+  string session_id = 1;
+  Board board = 2;
+}
+
+message ApplyMoveRequest {
+  string session_id = 1;
+  string arrow_id = 2;
+}
+
+message ApplyMoveResponse {
+  SlideOutcome outcome = 1;
+  Board board = 2;
+  bool is_success = 3;
+  bool is_puzzle_complete = 4;
+}
+
+message GetSessionRequest {
+  string session_id = 1;
+}
+
+message GetSessionResponse {
+  string session_id = 1;
+  Board board = 2;
+}

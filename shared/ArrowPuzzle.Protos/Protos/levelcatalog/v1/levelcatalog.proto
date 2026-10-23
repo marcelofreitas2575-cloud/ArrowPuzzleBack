@@ -1,0 +1,20 @@
+syntax = "proto3";
+
+package arrowpuzzle.levelcatalog.v1;
+
+option csharp_namespace = "ArrowPuzzle.Protos.LevelCatalog.V1";
+
+import "gamesession/v1/gamesession.proto";
+
+service LevelCatalogService {
+  rpc GetLevel(GetLevelRequest) returns (GetLevelResponse);
+}
+
+message GetLevelRequest {
+  string level_id = 1;
+}
+
+message GetLevelResponse {
+  string level_id = 1;
+  arrowpuzzle.gamesession.v1.Board board = 2;
+}

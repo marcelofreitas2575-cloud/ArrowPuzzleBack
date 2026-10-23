@@ -1,0 +1,79 @@
+# --- .NET ---
+bin/
+obj/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+[Dd]ebug/
+[Rr]elease/
+x64/
+x86/
+[Aa][Rr][Mm]/
+[Aa][Rr][Mm]64/
+bld/
+[Bb]in/
+[Oo]bj/
+[Ll]og/
+[Ll]ogs/
+*.nupkg
+*.snupkg
+.project.lock.json
+project.fragment.lock.json
+artifacts/
+*.rsuser
+*.DotSettings.user
+TestResults/
+coverage/
+*.coverage
+*.coveragexml
+
+# --- IDE ---
+.vs/
+.idea/
+*.swp
+*.swo
+*~
+
+# --- Docker / local env ---
+.env
+.env.*
+!.env.example
+docker-compose.override.yml
+
+# --- Android (Kotlin) ---
+android/.gradle/
+android/build/
+android/app/build/
+android/local.properties
+android/.idea/
+android/*.iml
+android/captures/
+android/.externalNativeBuild/
+android/.cxx/
+*.apk
+*.aab
+*.keystore
+!android/debug.keystore
+
+# --- Terraform (future AWS TODO) ---
+deploy/terraform/.terraform/
+deploy/terraform/*.tfstate
+deploy/terraform/*.tfstate.*
+deploy/terraform/*.tfvars
+!deploy/terraform/*.tfvars.example
+
+# --- OS ---
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+.DS_Store
+
+# --- Local backups (use Git for version history) ---
+deploy/backups/*.zip
+
+# --- Secrets (never commit) ---
+**/secrets.json
+**/appsettings.*.local.json
+*.pem
+*.p12

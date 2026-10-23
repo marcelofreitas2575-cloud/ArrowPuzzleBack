@@ -1,0 +1,85 @@
+# Arquivado — Keycloak + guest bootstrap já estão no docker-compose.yml principal.
+# Google IdP: use profile google-idp no compose principal (ver deploy/docker/README.md).
+#
+#   cd c:\Marcelo\Pessoal\Estudos\SophiaArrowPuzzle\deploy\docker\archive
+#   docker compose -f docker-compose.keycloak.yml --profile auth up -d
+
+name: arrow-puzzle
+
+services:
+  postgres:
+    profiles: [auth]
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: keycloak
+      POSTGRES_USER: keycloak
+      POSTGRES_PASSWORD: keycloak
+    volumes:
+      - keycloak-db:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U keycloak -d keycloak"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  keycloak:
+    profiles: [auth]
+    image: quay.io/keycloak/keycloak:26.0.5
+    command: start-dev --import-realm
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      KC_DB: postgres
+      KC_DB_URL: jdbc:postgresql://postgres:5432/keycloak
+      KC_DB_USERNAME: keycloak
+      KC_DB_PASSWORD: keycloak
+      KC_HTTP_ENABLED: "true"
+      KC_HEALTH_ENABLED: "true"
+      KC_HOSTNAME_STRICT: "false"
+      KC_HOSTNAME_STRICT_BACKCHANNEL: "false"
+      KEYCLOAK_ADMIN: admin
+      KEYCLOAK_ADMIN_PASSWORD: admin
+    ports:
+      - "8080:8080"
+    volumes:
+      - ../../keycloak/import:/opt/keycloak/data/import
+
+  keycloak-guest-bootstrap:
+    profiles: [auth]
+    image: quay.io/keycloak/keycloak:26.0.5
+    depends_on:
+      - keycloak
+    environment:
+      KEYCLOAK_URL: http://keycloak:8080
+      KEYCLOAK_ADMIN: admin
+      KEYCLOAK_ADMIN_PASSWORD: admin
+      KEYCLOAK_REALM: arrow-puzzle
+      GUEST_USERNAME: guest-player
+      GUEST_PASSWORD: guest-player
+    volumes:
+      - ../../keycloak/bootstrap-guest-user.sh:/bootstrap-guest-user.sh:ro
+    entrypoint: ["/bin/sh", "/bootstrap-guest-user.sh"]
+    restart: "no"
+
+  keycloak-google-bootstrap:
+    profiles: [auth]
+    image: quay.io/keycloak/keycloak:26.0.5
+    depends_on:
+      - keycloak
+    environment:
+      KEYCLOAK_URL: http://keycloak:8080
+      KEYCLOAK_ADMIN: admin
+      KEYCLOAK_ADMIN_PASSWORD: admin
+      KEYCLOAK_REALM: arrow-puzzle
+      GOOGLE_IDP_CLIENT_ID: ${GOOGLE_IDP_CLIENT_ID:-}
+      GOOGLE_IDP_CLIENT_SECRET: ${GOOGLE_IDP_CLIENT_SECRET:-}
+      KEYCLOAK_FRONTEND_URL: ${KEYCLOAK_FRONTEND_URL:-}
+      KEYCLOAK_PUBLIC_REDIRECT_URI: ${KEYCLOAK_PUBLIC_REDIRECT_URI:-}
+    volumes:
+      - ../../keycloak/bootstrap-google-idp.sh:/bootstrap-google-idp.sh:ro
+    entrypoint: ["/bin/sh", "/bootstrap-google-idp.sh"]
+    restart: "no"
+
+volumes:
+  keycloak-db:

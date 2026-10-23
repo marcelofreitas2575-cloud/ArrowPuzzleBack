@@ -1,0 +1,8 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\ArrowPuzzle.LevelGeneration\ArrowPuzzle.LevelGeneration.csproj" />
+  </ItemGroup>
+</Project>

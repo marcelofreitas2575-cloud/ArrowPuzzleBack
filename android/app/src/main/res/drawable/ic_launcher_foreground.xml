@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <!-- Tabuleiro -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M26,26h56v56h-56z" />
+    <path
+        android:fillColor="#E8EAF6"
+        android:pathData="M34,34h8v8h-8zM46,34h8v8h-8zM58,34h8v8h-8zM70,34h8v8h-8zM34,46h8v8h-8zM46,46h8v8h-8zM58,46h8v8h-8zM70,46h8v8h-8zM34,58h8v8h-8zM46,58h8v8h-8zM58,58h8v8h-8zM70,58h8v8h-8zM34,70h8v8h-8zM46,70h8v8h-8zM58,70h8v8h-8zM70,70h8v8h-8z" />
+    <!-- Seta horizontal (corpo + ponta) -->
+    <path
+        android:fillColor="#5E35B1"
+        android:pathData="M36,52h28v6h-28z" />
+    <path
+        android:fillColor="#5E35B1"
+        android:pathData="M66,50 L78,55 L66,60 Z" />
+    <!-- Seta em L -->
+    <path
+        android:fillColor="#3949AB"
+        android:pathData="M52,62h6v14h-6z" />
+    <path
+        android:fillColor="#3949AB"
+        android:pathData="M52,72h14v6h-14z" />
+    <path
+        android:fillColor="#3949AB"
+        android:pathData="M60,69 L72,74 L60,79 Z" />
+</vector>

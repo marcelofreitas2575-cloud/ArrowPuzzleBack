@@ -1,0 +1,10 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <ItemGroup>
+    <ProjectReference Include="..\ArrowPuzzle.PlayerProgress.Application\ArrowPuzzle.PlayerProgress.Application.csproj" />
+    <ProjectReference Include="..\..\..\shared\ArrowPuzzle.BuildingBlocks\ArrowPuzzle.BuildingBlocks.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="AWSSDK.DynamoDBv2" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.Binder" />
+  </ItemGroup>
+</Project>

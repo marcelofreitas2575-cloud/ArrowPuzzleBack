@@ -1,0 +1,289 @@
+name: arrow-puzzle
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: keycloak
+      POSTGRES_USER: keycloak
+      POSTGRES_PASSWORD: keycloak
+    volumes:
+      - keycloak-db:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U keycloak -d keycloak"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  keycloak:
+    image: quay.io/keycloak/keycloak:26.0.5
+    command: start-dev --import-realm
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      KC_DB: postgres
+      KC_DB_URL: jdbc:postgresql://postgres:5432/keycloak
+      KC_DB_USERNAME: keycloak
+      KC_DB_PASSWORD: keycloak
+      KC_HTTP_ENABLED: "true"
+      KC_HEALTH_ENABLED: "true"
+      KC_HOSTNAME_STRICT: "false"
+      KC_HOSTNAME_STRICT_BACKCHANNEL: "false"
+      KEYCLOAK_ADMIN: admin
+      KEYCLOAK_ADMIN_PASSWORD: admin
+    ports:
+      - "8080:8080"
+    volumes:
+      - ../keycloak/import:/opt/keycloak/data/import
+
+  keycloak-guest-bootstrap:
+    image: quay.io/keycloak/keycloak:26.0.5
+    depends_on:
+      - keycloak
+    environment:
+      KEYCLOAK_URL: http://keycloak:8080
+      KEYCLOAK_ADMIN: admin
+      KEYCLOAK_ADMIN_PASSWORD: admin
+      KEYCLOAK_REALM: arrow-puzzle
+      GUEST_USERNAME: guest-player
+      GUEST_PASSWORD: guest-player
+    volumes:
+      - ../keycloak/bootstrap-guest-user.sh:/bootstrap-guest-user.sh:ro
+    entrypoint: ["/bin/sh", "/bootstrap-guest-user.sh"]
+    restart: "no"
+
+  keycloak-google-bootstrap:
+    profiles: ["google-idp"]
+    image: quay.io/keycloak/keycloak:26.0.5
+    depends_on:
+      - keycloak
+    environment:
+      KEYCLOAK_URL: http://keycloak:8080
+      KEYCLOAK_ADMIN: admin
+      KEYCLOAK_ADMIN_PASSWORD: admin
+      KEYCLOAK_REALM: arrow-puzzle
+      GOOGLE_IDP_CLIENT_ID: ${GOOGLE_IDP_CLIENT_ID:-}
+      GOOGLE_IDP_CLIENT_SECRET: ${GOOGLE_IDP_CLIENT_SECRET:-}
+      KEYCLOAK_FRONTEND_URL: ${KEYCLOAK_FRONTEND_URL:-}
+      KEYCLOAK_PUBLIC_REDIRECT_URI: ${KEYCLOAK_PUBLIC_REDIRECT_URI:-}
+    volumes:
+      - ../keycloak/bootstrap-google-idp.sh:/bootstrap-google-idp.sh:ro
+    entrypoint: ["/bin/sh", "/bootstrap-google-idp.sh"]
+    restart: "no"
+
+  dynamodb:
+    image: amazon/dynamodb-local:latest
+    command: "-jar DynamoDBLocal.jar -sharedDb -inMemory"
+    ports:
+      - "8000:8000"
+
+  game-session:
+    build:
+      context: ../..
+      dockerfile: deploy/docker/game-session.Dockerfile
+    depends_on:
+      dynamodb:
+        condition: service_started
+    environment:
+      ASPNETCORE_URLS: http://+:5101
+      Persistence__Provider: DynamoDb
+      DynamoDb__ServiceUrl: http://dynamodb:8000
+      DynamoDb__Region: us-east-1
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS http://127.0.0.1:5101/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 25s
+    ports:
+      - "5101:5101"
+
+  level-catalog:
+    build:
+      context: ../..
+      dockerfile: deploy/docker/level-catalog.Dockerfile
+    environment:
+      ASPNETCORE_URLS: http://+:5102
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS http://127.0.0.1:5102/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 20s
+    ports:
+      - "5102:5102"
+
+  player-progress:
+    build:
+      context: ../..
+      dockerfile: deploy/docker/player-progress.Dockerfile
+    depends_on:
+      dynamodb:
+        condition: service_started
+    environment:
+      ASPNETCORE_URLS: http://+:5103
+      Persistence__Provider: DynamoDb
+      DynamoDb__ServiceUrl: http://dynamodb:8000
+      DynamoDb__Region: us-east-1
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS http://127.0.0.1:5103/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 25s
+    ports:
+      - "5103:5103"
+
+  placement:
+    image: daprio/dapr:1.15.0
+    command: ["./placement", "-port", "50005"]
+
+  game-session-dapr:
+    image: daprio/daprd:1.15.0
+    command:
+      - "./daprd"
+      - "-app-id"
+      - "game-session"
+      - "-app-port"
+      - "5101"
+      - "-app-protocol"
+      - "http"
+      - "-app-channel-address"
+      - "game-session"
+      - "-placement-host-address"
+      - "placement:50005"
+      - "-config"
+      - "/config/arrowpuzzle-config.yaml"
+    volumes:
+      - ../dapr/config:/config
+    depends_on:
+      game-session:
+        condition: service_started
+      placement:
+        condition: service_started
+
+  level-catalog-dapr:
+    image: daprio/daprd:1.15.0
+    command:
+      - "./daprd"
+      - "-app-id"
+      - "level-catalog"
+      - "-app-port"
+      - "5102"
+      - "-app-protocol"
+      - "http"
+      - "-app-channel-address"
+      - "level-catalog"
+      - "-placement-host-address"
+      - "placement:50005"
+      - "-config"
+      - "/config/arrowpuzzle-config.yaml"
+    volumes:
+      - ../dapr/config:/config
+    depends_on:
+      level-catalog:
+        condition: service_started
+      placement:
+        condition: service_started
+
+  player-progress-dapr:
+    image: daprio/daprd:1.15.0
+    command:
+      - "./daprd"
+      - "-app-id"
+      - "player-progress"
+      - "-app-port"
+      - "5103"
+      - "-app-protocol"
+      - "http"
+      - "-app-channel-address"
+      - "player-progress"
+      - "-placement-host-address"
+      - "placement:50005"
+      - "-config"
+      - "/config/arrowpuzzle-config.yaml"
+    volumes:
+      - ../dapr/config:/config
+    depends_on:
+      player-progress:
+        condition: service_started
+      placement:
+        condition: service_started
+
+  # Sidecar separado (sem network_mode:service:gateway) para manter 0.0.0.0:5100 publicado para LAN/celular.
+  gateway-dapr:
+    image: daprio/daprd:1.15.0
+    command:
+      - "./daprd"
+      - "-app-id"
+      - "gateway"
+      - "-app-port"
+      - "5100"
+      - "-app-protocol"
+      - "http"
+      - "-app-channel-address"
+      - "gateway"
+      - "-placement-host-address"
+      - "placement:50005"
+      - "-config"
+      - "/config/arrowpuzzle-config.yaml"
+    volumes:
+      - ../dapr/config:/config
+    depends_on:
+      placement:
+        condition: service_started
+
+  gateway:
+    build:
+      context: ../..
+      dockerfile: deploy/docker/gateway.Dockerfile
+    depends_on:
+      game-session:
+        condition: service_started
+      level-catalog:
+        condition: service_started
+      player-progress:
+        condition: service_started
+      player-progress-dapr:
+        condition: service_started
+      game-session-dapr:
+        condition: service_started
+      level-catalog-dapr:
+        condition: service_started
+      gateway-dapr:
+        condition: service_started
+      keycloak:
+        condition: service_started
+    environment:
+      ASPNETCORE_URLS: http://+:5100
+      Dapr__Enabled: "true"
+      DAPR_HTTP_ENDPOINT: http://gateway-dapr:3500
+      DAPR_GRPC_ENDPOINT: http://gateway-dapr:50001
+      Product__DisplayName: ${PRODUCT_DISPLAY_NAME:-Arrow Puzzle}
+      KeycloakDevAuth__TokenEndpointUrl: http://keycloak:8080/realms/arrow-puzzle/protocol/openid-connect/token
+      KeycloakDevAuth__DevClientId: arrow-puzzle-dev-cli
+      KeycloakDevAuth__Enabled: "true"
+      Authentication__Jwt__Authority: http://localhost:8080/realms/arrow-puzzle
+      Authentication__Jwt__MetadataAddress: http://keycloak:8080/realms/arrow-puzzle
+      Authentication__Jwt__JwksUri: http://keycloak:8080/realms/arrow-puzzle/protocol/openid-connect/certs
+      Authentication__Jwt__RequireHttpsMetadata: "false"
+      Authentication__Jwt__ValidIssuers__0: http://localhost:8080/realms/arrow-puzzle
+      Authentication__Jwt__ValidIssuers__1: http://127.0.0.1:8080/realms/arrow-puzzle
+      Authentication__Jwt__ValidIssuers__2: http://${DEV_HOST:-192.168.0.38}:8080/realms/arrow-puzzle
+      Authentication__Jwt__ValidIssuers__3: http://10.0.2.2:8080/realms/arrow-puzzle
+      Authentication__Jwt__ValidIssuers__4: http://keycloak:8080/realms/arrow-puzzle
+      Authentication__Jwt__ValidAudiences__0: account
+      Authentication__Jwt__ValidAudiences__1: arrow-puzzle-android
+      Authentication__Jwt__ValidAudiences__2: arrow-puzzle-dev-cli
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS http://127.0.0.1:5100/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 30s
+    ports:
+      - "0.0.0.0:5100:5100"
+
+volumes:
+  keycloak-db:

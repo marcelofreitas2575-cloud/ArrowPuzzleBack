@@ -1,0 +1,5 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <ItemGroup>
+    <InternalsVisibleTo Include="ArrowPuzzle.GameSession.Domain.Tests" />
+  </ItemGroup>
+</Project>

@@ -1,0 +1,26 @@
+apiVersion: dapr.io/v1alpha1
+kind: Configuration
+metadata:
+  name: arrowpuzzle
+spec:
+  resiliency:
+    policies:
+      retries:
+        default:
+          policy: constant
+          duration: 500ms
+          maxRetries: 3
+      timeouts:
+        default:
+          response: 15s
+    targets:
+      apps:
+        game-session:
+          retry: default
+          timeout: default
+        level-catalog:
+          retry: default
+          timeout: default
+        player-progress:
+          retry: default
+          timeout: default

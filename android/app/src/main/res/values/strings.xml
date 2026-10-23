@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Arrow Puzzle</string>
+    <string name="game_title_fallback">Arrow Puzzle</string>
+    <string name="login_tagline">Deslize as setas e esvazie o tabuleiro.</string>
+    <string name="login_google">Continuar com Google</string>
+    <string name="login_with_email">Entrar com e-mail</string>
+    <string name="login_hide_email">Ocultar e-mail</string>
+    <string name="login_username">Usuário</string>
+    <string name="login_password">Senha</string>
+    <string name="login_submit">Entrar</string>
+    <string name="login_play_guest">Jogar como convidado</string>
+    <string name="login_guest_hint">Modo convidado para desenvolvimento local.</string>
+</resources>

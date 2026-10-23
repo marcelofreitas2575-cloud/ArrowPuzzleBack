@@ -1,0 +1,3 @@
+# Arquivado — Dapr está no docker-compose.yml principal (deploy/docker).
+# Histórico: overlay vazio para compatibilidade com comandos antigos.
+name: arrow-puzzle

@@ -1,0 +1,117 @@
+{
+  "realm": "arrow-puzzle",
+  "enabled": true,
+  "sslRequired": "external",
+  "registrationAllowed": false,
+  "loginWithEmailAllowed": true,
+  "duplicateEmailsAllowed": false,
+  "resetPasswordAllowed": false,
+  "editUsernameAllowed": false,
+  "bruteForceProtected": true,
+  "roles": {
+    "realm": [
+      {
+        "name": "player",
+        "description": "Default game player role"
+      }
+    ]
+  },
+  "users": [
+    {
+      "username": "dev-player",
+      "enabled": true,
+      "emailVerified": true,
+      "firstName": "Dev",
+      "lastName": "Player",
+      "email": "dev-player@local.arrowpuzzle",
+      "credentials": [
+        {
+          "type": "password",
+          "value": "dev-player",
+          "temporary": false
+        }
+      ],
+      "realmRoles": ["player"]
+    },
+    {
+      "username": "guest-player",
+      "enabled": true,
+      "emailVerified": true,
+      "firstName": "Guest",
+      "lastName": "Player",
+      "email": "guest-player@local.arrowpuzzle",
+      "credentials": [
+        {
+          "type": "password",
+          "value": "guest-player",
+          "temporary": false
+        }
+      ],
+      "realmRoles": ["player"]
+    }
+  ],
+  "clients": [
+    {
+      "clientId": "arrow-puzzle-android",
+      "name": "Arrow Puzzle Android",
+      "enabled": true,
+      "publicClient": true,
+      "standardFlowEnabled": true,
+      "directAccessGrantsEnabled": false,
+      "implicitFlowEnabled": false,
+      "serviceAccountsEnabled": false,
+      "redirectUris": [
+        "com.arrowpuzzle.app://callback",
+        "http://127.0.0.1:*",
+        "http://localhost:*"
+      ],
+      "webOrigins": ["+"],
+      "attributes": {
+        "pkce.code.challenge.method": "S256"
+      },
+      "protocol": "openid-connect",
+      "fullScopeAllowed": true
+    },
+    {
+      "clientId": "arrow-puzzle-dev-cli",
+      "name": "Local dev token (password grant only — not for production)",
+      "enabled": true,
+      "publicClient": true,
+      "standardFlowEnabled": false,
+      "directAccessGrantsEnabled": true,
+      "protocol": "openid-connect",
+      "fullScopeAllowed": true
+    },
+    {
+      "clientId": "arrow-puzzle-bff",
+      "name": "Arrow Puzzle BFF (resource validation)",
+      "enabled": true,
+      "publicClient": false,
+      "bearerOnly": true,
+      "standardFlowEnabled": false,
+      "directAccessGrantsEnabled": false,
+      "protocol": "openid-connect"
+    }
+  ],
+  "identityProviders": [
+    {
+      "alias": "google",
+      "displayName": "Google",
+      "providerId": "google",
+      "enabled": false,
+      "updateProfileFirstLoginMode": "on",
+      "trustEmail": true,
+      "storeToken": false,
+      "addReadTokenRoleOnCreate": false,
+      "authenticateByDefault": false,
+      "linkOnly": false,
+      "firstBrokerLoginFlowAlias": "first broker login",
+      "config": {
+        "clientId": "REPLACE_WITH_GOOGLE_CLIENT_ID",
+        "clientSecret": "REPLACE_WITH_GOOGLE_CLIENT_SECRET",
+        "defaultScope": "openid profile email",
+        "syncMode": "IMPORT"
+      }
+    }
+  ]
+}

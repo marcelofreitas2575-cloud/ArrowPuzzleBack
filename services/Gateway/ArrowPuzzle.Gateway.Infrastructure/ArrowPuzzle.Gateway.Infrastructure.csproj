@@ -1,0 +1,12 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <ItemGroup>
+    <ProjectReference Include="..\ArrowPuzzle.Gateway.Application\ArrowPuzzle.Gateway.Application.csproj" />
+    <ProjectReference Include="..\..\..\shared\ArrowPuzzle.Protos\ArrowPuzzle.Protos.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Dapr.Client" />
+    <PackageReference Include="Grpc.Net.ClientFactory" />
+    <PackageReference Include="Microsoft.Extensions.Http.Resilience" />
+    <PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" />
+  </ItemGroup>
+</Project>
