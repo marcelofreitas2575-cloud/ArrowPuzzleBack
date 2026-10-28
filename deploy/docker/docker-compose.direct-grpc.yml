@@ -1,6 +1,6 @@
 # Diagnóstico: gRPC direto no gateway (sem invocação Dapr). Ver deploy/docker/README.md.
 #   cd c:\Marcelo\Pessoal\Estudos\SophiaArrowPuzzle\deploy\docker
-#   docker compose -f docker-compose.yml -f docker-compose.direct-grpc.yml up -d --build gateway
+#   docker compose -f docker-compose.yml -f docker-compose.direct-grpc.yml up -d --build gateway game-session level-catalog player-progress
 name: arrow-puzzle
 
 services:
@@ -10,3 +10,15 @@ services:
       Services__GameSession: http://game-session:5101
       Services__LevelCatalog: http://level-catalog:5102
       Services__PlayerProgress: http://player-progress:5103
+
+  game-session:
+    environment:
+      InternalGrpc__Enabled: "true"
+
+  level-catalog:
+    environment:
+      InternalGrpc__Enabled: "true"
+
+  player-progress:
+    environment:
+      InternalGrpc__Enabled: "true"
