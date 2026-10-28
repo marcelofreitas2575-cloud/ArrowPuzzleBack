@@ -29,7 +29,36 @@ jobs:
         run: dotnet build ArrowPuzzle.sln --no-restore -c Release
 
       - name: Test
-        run: dotnet test ArrowPuzzle.sln --no-build -c Release --verbosity normal
+        run: dotnet test ArrowPuzzle.sln --no-build -c Release --verbosity normal --filter "Category!=E2e"
+
+  gateway-e2e:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          global-json-file: global.json
+
+      - name: Start stack
+        working-directory: deploy/docker
+        run: docker compose up -d --build
+
+      - name: Wait for gateway
+        run: bash deploy/docker/e2e-wait-gateway.sh
+
+      - name: E2E tests
+        env:
+          GATEWAY_E2E_URL: http://127.0.0.1:5100
+        run: dotnet test tests/ArrowPuzzle.Gateway.E2e.Tests/ArrowPuzzle.Gateway.E2e.Tests.csproj -c Release --verbosity normal --filter "Category=E2e"
+
+      - name: Stop stack
+        if: always()
+        working-directory: deploy/docker
+        run: docker compose down -v
 
   compose-config:
     runs-on: ubuntu-latest
@@ -39,3 +68,22 @@ jobs:
 
       - name: Validate Docker Compose
         run: docker compose -f deploy/docker/docker-compose.yml config --quiet
+
+  android-assemble-debug:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Assemble debug APK
+        working-directory: android
+        run: ./gradlew assembleDebug --no-daemon --stacktrace
