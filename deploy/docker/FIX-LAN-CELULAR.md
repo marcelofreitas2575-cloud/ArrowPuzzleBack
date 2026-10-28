@@ -1,43 +1,41 @@
-# Celular não abre `http://192.168.0.38:5100/health`
+# Celular não abre `http://<IP-da-PC>:5100/health`
 
-## O que quebrou no projeto (já corrigido no repo)
-
-- Sidecar **`gateway-dapr`** com `network_mode: service:gateway` — a porta **5100** deixava de ser publicada direito. Correção: sidecar na rede do Compose com `-app-channel-address gateway` (ver `docker-compose.yml`).
-- Experimento de portas **8080/8090** — revertido; gateway na **5100**.
-
-## O que a PC mostra vs o celular
-
-- Na **PC**, `http://192.168.0.38:5100/health` pode funcionar **mesmo quando o celular não alcança** (loopback / hairpin no Windows).
-- O Docker Desktop (WSL2) atende a LAN via **`com.docker.backend.exe`**. Sem regra de firewall correta, só o host local passa.
-
-Documentação: [Docker Desktop networking](https://docs.docker.com/desktop/features/networking/) — *“Host firewalls can permit or deny inbound connections by filtering on com.docker.backend.”*
-
-## Correção (uma vez, como Administrador)
-
-1. Subir o gateway:
+## Comando único (como antes)
 
 ```powershell
 cd c:\Marcelo\Pessoal\Estudos\SophiaArrowPuzzle\deploy\docker
-docker compose up -d gateway
+docker compose down --remove-orphans
+docker compose up -d --build
 ```
 
-2. Firewall + Wi‑Fi **Privado** (não deixe FamiliaCarvalho como **Público** para dev):
+**Não** deixe `dotnet run` nem scripts de BFF no Windows rodando — ocupam a 5100 e impedem o container `gateway`.
+
+Confirme:
+
+```powershell
+docker ps --format "{{.Names}} {{.Status}} {{.Ports}}" | findstr gateway
+```
+
+Esperado: `arrow-puzzle-gateway-1` **healthy** com `0.0.0.0:5100->5100/tcp`.
+
+## Firewall (Administrador, uma vez)
 
 ```powershell
 powershell -ExecutionPolicy Bypass -File c:\Marcelo\Pessoal\Estudos\SophiaArrowPuzzle\deploy\docker\open-firewall-lan.ps1
 ```
 
-*(Clique direito no PowerShell → **Executar como administrador**, depois rode o comando acima.)*
+## Wi‑Fi como rede Privada
 
-3. Chrome no celular (mesma Wi‑Fi, IPv4 do celular `192.168.0.x`):
+```powershell
+Set-NetConnectionProfile -InterfaceAlias "Wi-Fi" -NetworkCategory Private
+```
 
-`http://192.168.0.38:5100/health`
+(Ajuste o alias se necessário.)
 
-## Docker Desktop (conferir)
+## O que quebrou depois das mudanças de mTLS/Dapr
 
-Settings → **Network** → **Port binding behavior** = **Default port binding** (não “Local only”).  
-No seu Desktop 4.78 o analytics já indica `default-port-binding`.
+Sidecars com flags/config inválidos (Dapr 1.15) caíam → login convidado falhava mesmo com `/health` ok. O `docker-compose.yml` foi **restaurado** ao commit `7c327f2` (Dapr estável, **sem** `network_mode: service:gateway` no BFF).
 
-## Se ainda falhar depois do script admin
+## Roteador
 
-Isolamento **AP / cliente‑cliente** no roteador (comum em mesh). Não é código do jogo — o roteador impede celular → PC. Opções: desativar isolamento AP na administração do Wi‑Fi ou usar depuração USB + `adb reverse tcp:5100 tcp:5100` e `http://127.0.0.1:5100/health` no Chrome.
+PC abre `http://192.168.x.x:5100/health` e celular não: **isolamento AP** no roteador, ou `adb reverse` (`dev.useAdbReverse=true` no `local.properties`).

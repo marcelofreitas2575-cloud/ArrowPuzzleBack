@@ -1,0 +1,25 @@
+# BFF no Windows (run-gateway-lan.ps1): sidecar fala com Kestrel em host.docker.internal:5100
+# e expõe a API Dapr em 127.0.0.1:3500 para o processo dotnet no host.
+name: arrow-puzzle
+
+services:
+  gateway-dapr:
+    command:
+      - "./daprd"
+      - "-app-id"
+      - "gateway"
+      - "-app-port"
+      - "5100"
+      - "-app-protocol"
+      - "http"
+      - "-app-channel-address"
+      - "host.docker.internal"
+      - "-placement-host-address"
+      - "placement:50005"
+      - "-config"
+      - "/config/arrowpuzzle-config.yaml"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    ports:
+      - "127.0.0.1:3500:3500"
+      - "127.0.0.1:50001:50001"

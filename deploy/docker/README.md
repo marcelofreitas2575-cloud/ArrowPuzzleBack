@@ -1,8 +1,6 @@
 # Docker Compose — Arrow Puzzle (local)
 
-## Stack padrão (dev + celular)
-
-Um único arquivo principal:
+## Subir tudo (PC + celular)
 
 ```powershell
 cd c:\Marcelo\Pessoal\Estudos\SophiaArrowPuzzle\deploy\docker
@@ -10,7 +8,18 @@ copy .env.example .env
 docker compose up -d --build
 ```
 
-Inclui: Postgres + Keycloak (+ guest bootstrap), DynamoDB Local, microsserviços gRPC, **Dapr** (placement + sidecars), gateway BFF na **`0.0.0.0:5100`**.
+Postgres, Keycloak (+ guest bootstrap), DynamoDB Local, microsserviços, **Dapr** (placement + sidecars), gateway BFF na **5100**.
+
+### BFF — API, docs e métricas (host)
+
+| URL | Descrição |
+|-----|-----------|
+| `http://127.0.0.1:5100/health` | Saúde do gateway |
+| `http://127.0.0.1:5100/scalar` | UI OpenAPI (Scalar) |
+| `http://127.0.0.1:5100/openapi/v1.json` | Contrato OpenAPI JSON |
+| `http://127.0.0.1:5100/metrics` | Prometheus (RED HTTP) |
+
+Contrato estático + Postman: [docs/api/README.md](../../docs/api/README.md).
 
 Parar:
 
@@ -19,18 +28,25 @@ cd c:\Marcelo\Pessoal\Estudos\SophiaArrowPuzzle\deploy\docker
 docker compose down --remove-orphans
 ```
 
-## Overlay de diagnóstico (gRPC direto no gateway)
+## Celular (mesma Wi‑Fi)
 
-Sem invocação Dapr no BFF — só para isolar falhas de sidecar/Dapr:
+1. `dev.host=<IPv4 da PC>` em `android/local.properties` → rebuild APK.
+2. Firewall (Admin, uma vez):
 
 ```powershell
-cd c:\Marcelo\Pessoal\Estudos\SophiaArrowPuzzle\deploy\docker
-docker compose -f docker-compose.yml -f docker-compose.direct-grpc.yml up -d --build gateway
+powershell -ExecutionPolicy Bypass -File c:\Marcelo\Pessoal\Estudos\SophiaArrowPuzzle\deploy\docker\open-firewall-lan.ps1
 ```
 
-## Google IdP no Keycloak (opcional)
+3. Chrome: `http://<IP-da-PC>:5100/health`
 
-Com credenciais no `.env` / ambiente:
+Detalhes: [FIX-LAN-CELULAR.md](FIX-LAN-CELULAR.md).
+
+## Overlays opcionais
+
+- **debug-ports:** `docker-compose.debug-ports.yml`
+- **gRPC direto no BFF (sem Dapr):** `docker-compose.direct-grpc.yml`
+
+## Google IdP
 
 ```powershell
 cd c:\Marcelo\Pessoal\Estudos\SophiaArrowPuzzle\deploy\docker
@@ -38,13 +54,3 @@ docker compose --profile google-idp up -d keycloak-google-bootstrap
 ```
 
 Ver [deploy/keycloak/GOOGLE_IDP.md](../keycloak/GOOGLE_IDP.md).
-
-## LAN / celular
-
-- Firewall: [open-firewall-lan.ps1](open-firewall-lan.ps1)
-- Troubleshooting: [FIX-LAN-CELULAR.md](FIX-LAN-CELULAR.md), [CONNECTION_TEST.md](CONNECTION_TEST.md)
-- BFF no host (último recurso): [run-gateway-lan.ps1](run-gateway-lan.ps1)
-
-## Arquivos legados
-
-Compose antigos (connection-test, Keycloak duplicado, overlay Dapr vazio) estão em [archive/](archive/README.md).

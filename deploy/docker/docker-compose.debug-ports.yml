@@ -1,0 +1,22 @@
+# Overlay opcional: expõe portas dos microsserviços e DynamoDB no host (debug local).
+# Uso:
+#   docker compose -f docker-compose.yml -f docker-compose.debug-ports.yml up -d
+#
+# Não use junto com simulação de produção — bypass parcial da zona interna.
+
+services:
+  dynamodb:
+    ports:
+      - "8000:8000"
+
+  game-session:
+    ports:
+      - "5101:5101"
+
+  level-catalog:
+    ports:
+      - "5102:5102"
+
+  player-progress:
+    ports:
+      - "5103:5103"
