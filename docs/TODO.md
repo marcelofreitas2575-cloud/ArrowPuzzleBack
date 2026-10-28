@@ -1,65 +1,25 @@
-# Pendências técnicas (local / roadmap)
+# Pendências técnicas — status portfolio
 
-## Fechado neste ciclo (backend + CI + contrato)
+## ✅ Fechado (100% checklist local / documentação)
 
-- **E2E Gateway** — `tests/ArrowPuzzle.Gateway.E2e.Tests`, job `gateway-e2e`, [e2e-wait-gateway.sh](../deploy/docker/e2e-wait-gateway.sh)
-- **Correlation** — `X-Correlation-Id` + propagação Dapr no BFF
-- **OpenAPI / Postman BFF** — [docs/api/](api/), [postman/collections/arrow-puzzle-bff/](../postman/collections/arrow-puzzle-bff/), runtime `/openapi/v1.json` + `/scalar`
-- **Observabilidade RED** — OpenTelemetry + `GET /metrics` (5100–5103)
-- **CI Android** — job `android-assemble-debug` em [`.github/workflows/dotnet-ci.yml`](../.github/workflows/dotnet-ci.yml)
-- **Compose LAN** — stack padrão em [deploy/docker/docker-compose.yml](../deploy/docker/docker-compose.yml)
+| Bloco | Itens |
+|-------|--------|
+| **Backend + CI** | E2E Gateway, correlation, OpenAPI/Postman, Prometheus `/metrics`, Android CI job, Compose LAN |
+| **Opção B (Git)** | `main` sincronizada com `origin` |
+| **Opção A (Docs)** | README + badge CI, C4, ADR 003–004, [ROADMAP.md](ROADMAP.md) |
 
----
-
-## Próximo tópico → **Opção A** (documentação portfolio)
-
-| # | Entrega | Onde |
-|---|---------|------|
-| A1 | README: badge CI, repro ~5 min, links docker + api | Raiz `README.md` |
-| A2 | C4 containers atualizado | [docs/c4/containers.md](c4/containers.md) |
-| A3 | ADRs: Dapr HTTP BFF; sessão + `complete` verificado | `docs/adr/` |
-| A4 | Roadmap (mTLS Dapr K8s, OTLP/Grafana, AWS CD) | `docs/ROADMAP.md` ou README |
-
-**Opção B (Git):** concluída — `main` em `origin` no commit `15f61cc` (fast-forward de `feat/session-observability-and-ci`).
+Referência operacional: [deploy/docker/README.md](../deploy/docker/README.md), [docs/api/README.md](api/README.md).
 
 ---
 
-## CI/CD (referência)
+## Evolução futura (não bloqueia portfolio)
 
-**Jobs:** `build-and-test`, `gateway-e2e`, `compose-config`, `android-assemble-debug`.
+Ver **[ROADMAP.md](ROADMAP.md)** — OTLP/Grafana, Dapr mTLS no K8s, Cognito/AWS CD, testes instrumentados Android.
 
-**Pendente leve:** badge no README (A1).
+---
 
-**CD:** AWS — fora do escopo local-first.
+## CI (referência)
 
-## Observabilidade (referência)
+Workflow: [`.github/workflows/dotnet-ci.yml`](../.github/workflows/dotnet-ci.yml) — `build-and-test`, `gateway-e2e`, `compose-config`, `android-assemble-debug`.
 
-**Feito:** correlation + Prometheus RED em cada API.
-
-**Roadmap:** export OTLP (traces), dashboards Grafana — ver A4.
-
-## Docker / Dapr / catálogo / testes / Android
-
-Sem mudança de escopo — ver histórico git e [deploy/docker/README.md](../deploy/docker/README.md).
-
-## Pacotes de trabalho (legado)
-
-### Opção B — Git (após A)
-
-| # | Entrega |
-|---|---------|
-| B1 | Inventário do diff vs `main` |
-| B2 | Commits lógicos (session, obs, test/ci) |
-| B3 | Push + PR |
-| B4 | Higiene `.gitignore` / sem secrets |
-
-### Opção C — Validar local
-
-```powershell
-cd c:\Marcelo\Pessoal\Estudos\SophiaArrowPuzzle\deploy\docker
-docker compose up -d --build
-```
-
-- Browser: `http://127.0.0.1:5100/scalar`, `http://127.0.0.1:5100/metrics`
-- E2E: `$env:GATEWAY_E2E_URL="http://127.0.0.1:5100"` + `dotnet test tests\ArrowPuzzle.Gateway.E2e.Tests\ ... --filter Category=E2e`
-- Android: rebuild APK se `sessionId` no complete ainda não estiver instalado
+Badge no [README.md](../README.md).
