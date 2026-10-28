@@ -1,45 +1,65 @@
 # Pendências técnicas (local / roadmap)
 
-## CI/CD
+## Fechado neste ciclo (backend + CI + contrato)
 
-**Status (fase 1):** GitHub Actions [`.github/workflows/dotnet-ci.yml`](../.github/workflows/dotnet-ci.yml) — `dotnet restore/build/test` + `docker compose config` em push/PR na `main`.
+- **E2E Gateway** — `tests/ArrowPuzzle.Gateway.E2e.Tests`, job `gateway-e2e`, [e2e-wait-gateway.sh](../deploy/docker/e2e-wait-gateway.sh)
+- **Correlation** — `X-Correlation-Id` + propagação Dapr no BFF
+- **OpenAPI / Postman BFF** — [docs/api/](api/), [postman/collections/arrow-puzzle-bff/](../postman/collections/arrow-puzzle-bff/), runtime `/openapi/v1.json` + `/scalar`
+- **Observabilidade RED** — OpenTelemetry + `GET /metrics` (5100–5103)
+- **CI Android** — job `android-assemble-debug` em [`.github/workflows/dotnet-ci.yml`](../.github/workflows/dotnet-ci.yml)
+- **Compose LAN** — stack padrão em [deploy/docker/docker-compose.yml](../deploy/docker/docker-compose.yml)
 
-**Próximo:** badge no README; Android `assembleDebug` (opcional, job separado ou só `main`); E2E Compose (self-hosted runner ou manual).
+---
 
-**CD:** após decisão AWS — build imagens, ECR, deploy (fora do escopo local-first).
+## Próximo tópico → **Opção A** (documentação portfolio)
 
-## Docker Compose (organização)
+| # | Entrega | Onde |
+|---|---------|------|
+| A1 | README: badge CI, repro ~5 min, links docker + api | Raiz `README.md` |
+| A2 | C4 containers atualizado | [docs/c4/containers.md](c4/containers.md) |
+| A3 | ADRs: Dapr HTTP BFF; sessão + `complete` verificado | `docs/adr/` |
+| A4 | Roadmap (mTLS Dapr K8s, OTLP/Grafana, AWS CD) | `docs/ROADMAP.md` ou README |
 
-**Status:** feito — stack em [deploy/docker/docker-compose.yml](../deploy/docker/docker-compose.yml); overlay de diagnóstico [docker-compose.direct-grpc.yml](../deploy/docker/docker-compose.direct-grpc.yml); legados em [deploy/docker/archive/](../deploy/docker/archive/). Guia: [deploy/docker/README.md](../deploy/docker/README.md).
+Depois disso → **Opção B** (Git: commits, PR, push).
 
-## Dapr no Gateway (Compose local)
+---
 
-**Status:** padrão — sidecars em [deploy/docker/docker-compose.yml](../deploy/docker/docker-compose.yml); gateway com `Dapr__Enabled: true` e `DAPR_*_ENDPOINT` apontando para `gateway-dapr` (sidecar **sem** `network_mode: service:gateway`, para preservar `0.0.0.0:5100` na LAN).
+## CI/CD (referência)
 
-**Fallback diagnóstico:** overlay [deploy/docker/docker-compose.direct-grpc.yml](../deploy/docker/docker-compose.direct-grpc.yml) (`Services__*` + `Dapr__Enabled: false`).
+**Jobs:** `build-and-test`, `gateway-e2e`, `compose-config`, `android-assemble-debug`.
 
-**Critério de pronto:** `docker compose up` + E2E dev-token + `POST /api/v1/sessions` (nível `001`); celular `http://<IP-PC>:5100/health`.
+**Pendente leve:** badge no README (A1).
 
-**Nota técnica:** invocação BFF → serviços via rotas HTTP `/dapr/*` (JSON Protobuf); sidecars com `-app-channel-address` (sem `network_mode: service:*`) para LAN na 5100 e mDNS estável.
+**CD:** AWS — fora do escopo local-first.
 
-## Catálogo procedural
+## Observabilidade (referência)
 
-**Status:** Level Catalog gera níveis numéricos (`001`, `002`, …) **somente procedural** — sem JSON embedded/S3 no fluxo do app.
+**Feito:** correlation + Prometheus RED em cada API.
 
-**Pipeline de qualidade (implementado):**
+**Roadmap:** export OTLP (traces), dashboards Grafana — ver A4.
 
-1. `ProceduralLevelGenerator` — só aceita layout com `PuzzleSolver.IsSolvable` na geração.
-2. `ProceduralLevelSolvabilityGuard` — antes de devolver ao gRPC, roda `IsSolvable` + `TrySolve` independente.
-3. Testes — amostra de IDs + níveis `001`–`040` no CI (`ArrowPuzzle.LevelCatalog.Infrastructure.Tests`).
+## Docker / Dapr / catálogo / testes / Android
 
-**Fora de escopo:** arquivos JSON de nível no repositório ou catálogo estático.
+Sem mudança de escopo — ver histórico git e [deploy/docker/README.md](../deploy/docker/README.md).
 
-## Cobertura de testes (item 12)
+## Pacotes de trabalho (legado)
 
-**Status:** ampliado — projetos de teste em **Domain/Application** (Level Catalog, Gateway handlers, Player Progress, Game Session) + `ProceduralLevelSolvabilityGuard`; catálogo procedural 001–040 permanece no CI.
+### Opção B — Git (após A)
 
-**Fora de escopo por ora:** testes de Api/Infrastructure com DynamoDB real, Dapr sidecar E2E, Android unit/instrumented.
+| # | Entrega |
+|---|---------|
+| B1 | Inventário do diff vs `main` |
+| B2 | Commits lógicos (session, obs, test/ci) |
+| B3 | Push + PR |
+| B4 | Higiene `.gitignore` / sem secrets |
 
-## Player Progress (Android)
+### Opção C — Validar local
 
-**Status:** app usa `GET/POST /api/v1/me/progress` (convidado OIDC → DynamoDB via Player Progress). `LocalProgressStore` só cache do nível jogável.
+```powershell
+cd c:\Marcelo\Pessoal\Estudos\SophiaArrowPuzzle\deploy\docker
+docker compose up -d --build
+```
+
+- Browser: `http://127.0.0.1:5100/scalar`, `http://127.0.0.1:5100/metrics`
+- E2E: `$env:GATEWAY_E2E_URL="http://127.0.0.1:5100"` + `dotnet test tests\ArrowPuzzle.Gateway.E2e.Tests\ ... --filter Category=E2e`
+- Android: rebuild APK se `sessionId` no complete ainda não estiver instalado

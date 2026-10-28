@@ -1,0 +1,5 @@
+$kind: http-request
+name: Get level
+method: GET
+url: '{{gateway_base_url}}/api/v1/levels/{{level_id}}'
+order: 3000

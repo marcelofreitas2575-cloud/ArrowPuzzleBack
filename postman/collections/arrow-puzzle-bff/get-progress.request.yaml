@@ -1,0 +1,5 @@
+$kind: http-request
+name: Get my progress
+method: GET
+url: '{{gateway_base_url}}/api/v1/me/progress'
+order: 7000

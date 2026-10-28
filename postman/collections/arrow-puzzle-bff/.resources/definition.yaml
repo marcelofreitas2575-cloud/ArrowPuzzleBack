@@ -1,0 +1,19 @@
+$kind: collection
+name: arrow-puzzle-bff
+description: Arrow Puzzle Gateway (BFF) — guest flow and gameplay API.
+variables:
+  - key: gateway_base_url
+    value: 'http://127.0.0.1:5100'
+  - key: access_token
+    value: ''
+  - key: level_id
+    value: '001'
+  - key: session_id
+    value: ''
+  - key: arrow_id
+    value: ''
+auth:
+  type: bearer
+  credentials:
+    - key: token
+      value: '{{access_token}}'

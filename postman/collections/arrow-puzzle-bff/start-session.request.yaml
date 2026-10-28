@@ -1,0 +1,26 @@
+$kind: http-request
+name: Start session
+method: POST
+url: '{{gateway_base_url}}/api/v1/sessions'
+order: 4000
+headers:
+  - key: Content-Type
+    value: application/json
+body:
+  type: json
+  content: |-
+    {
+      "levelId": "{{level_id}}"
+    }
+scripts:
+  - type: afterResponse
+    language: text/javascript
+    code: |-
+      if (pm.response.code === 201) {
+        const json = pm.response.json();
+        pm.collectionVariables.set('session_id', json.sessionId);
+        const first = json.board && json.board.arrows && json.board.arrows[0];
+        if (first && first.id) {
+          pm.collectionVariables.set('arrow_id', first.id);
+        }
+      }

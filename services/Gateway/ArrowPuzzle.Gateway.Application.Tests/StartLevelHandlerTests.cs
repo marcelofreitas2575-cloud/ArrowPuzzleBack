@@ -17,7 +17,7 @@ public class StartLevelHandlerTests
             new FakeGameSessionBackend());
 
         await Assert.ThrowsAsync<KeyNotFoundException>(() =>
-            mediator.Send(new StartLevelCommand("999")));
+            mediator.Send(new StartLevelCommand("999", "user-1")));
     }
 
     [Fact]
@@ -25,12 +25,12 @@ public class StartLevelHandlerTests
     {
         var board = new BoardDto(3, 3, Array.Empty<ArrowDto>());
         var level = new LevelDto("001", board);
-        var session = new SessionDto("sess-1", board);
+        var session = new SessionDto("sess-1", board, "001", false);
         var mediator = CreateMediator(
             new FakeLevelCatalogBackend(level),
             new FakeGameSessionBackend(session));
 
-        var result = await mediator.Send(new StartLevelCommand("001"));
+        var result = await mediator.Send(new StartLevelCommand("001", "user-1"));
 
         Assert.Equal("sess-1", result.SessionId);
     }
@@ -54,16 +54,24 @@ public class StartLevelHandlerTests
 
     private sealed class FakeGameSessionBackend(SessionDto? session = null) : IGameSessionBackend
     {
-        public Task<SessionDto> CreateSessionAsync(BoardDto board, CancellationToken cancellationToken = default) =>
-            Task.FromResult(session ?? new SessionDto("generated", board));
+        public Task<SessionDto> CreateSessionAsync(
+            string userId,
+            string levelId,
+            BoardDto board,
+            CancellationToken cancellationToken = default) =>
+            Task.FromResult(session ?? new SessionDto("generated", board, levelId, false));
 
         public Task<ApplyMoveResultDto> ApplyMoveAsync(
             string sessionId,
+            string userId,
             string arrowId,
             CancellationToken cancellationToken = default) =>
             throw new NotImplementedException();
 
-        public Task<SessionDto?> GetSessionAsync(string sessionId, CancellationToken cancellationToken = default) =>
+        public Task<SessionDto?> GetSessionAsync(
+            string sessionId,
+            string userId,
+            CancellationToken cancellationToken = default) =>
             throw new NotImplementedException();
     }
 }

@@ -1,0 +1,169 @@
+openapi: 3.0.3
+info:
+  title: Arrow Puzzle BFF (Gateway)
+  version: v1
+  description: |
+    API HTTP do BFF. JWT OIDC (Keycloak). Dev local: POST /api/v1/auth/dev-token.
+servers:
+  - url: http://127.0.0.1:5100
+    description: Docker Compose (host)
+paths:
+  /health:
+    get:
+      summary: Health check
+      responses:
+        '200':
+          description: OK
+  /metrics:
+    get:
+      summary: Prometheus metrics (RED-friendly HTTP instrumentation)
+      responses:
+        '200':
+          description: Prometheus text exposition
+  /openapi/v1.json:
+    get:
+      summary: OpenAPI document (generated)
+      responses:
+        '200':
+          description: OpenAPI JSON
+  /api/v1/product:
+    get:
+      summary: Product display name (marketing string from config)
+      responses:
+        '200':
+          description: OK
+  /api/v1/auth/dev-token:
+    post:
+      summary: Dev-only password grant proxy (Keycloak)
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                username:
+                  type: string
+                password:
+                  type: string
+      responses:
+        '200':
+          description: Token payload (access_token, etc.)
+        '404':
+          description: Dev auth disabled
+  /api/v1/levels/{levelId}:
+    get:
+      summary: Get level definition
+      security:
+        - Bearer: []
+      parameters:
+        - name: levelId
+          in: path
+          required: true
+          schema:
+            type: string
+            example: '001'
+      responses:
+        '200':
+          description: Level with board
+        '404':
+          description: Unknown level
+  /api/v1/me/progress:
+    get:
+      summary: Player completed levels
+      security:
+        - Bearer: []
+      responses:
+        '200':
+          description: Progress DTO
+  /api/v1/me/progress/complete:
+    post:
+      summary: Mark level complete (optional session verification)
+      security:
+        - Bearer: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - levelId
+              properties:
+                levelId:
+                  type: string
+                sessionId:
+                  type: string
+                  nullable: true
+      responses:
+        '200':
+          description: Updated progress
+        '400':
+          description: Validation / win not verified
+        '404':
+          description: Session not found
+  /api/v1/sessions:
+    post:
+      summary: Start game session for a level
+      security:
+        - Bearer: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - levelId
+              properties:
+                levelId:
+                  type: string
+      responses:
+        '201':
+          description: Session created
+  /api/v1/sessions/{sessionId}:
+    get:
+      summary: Get session state
+      security:
+        - Bearer: []
+      parameters:
+        - name: sessionId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Session DTO
+        '404':
+          description: Not found
+  /api/v1/sessions/{sessionId}/moves:
+    post:
+      summary: Apply slide move for an arrow
+      security:
+        - Bearer: []
+      parameters:
+        - name: sessionId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - arrowId
+              properties:
+                arrowId:
+                  type: string
+      responses:
+        '200':
+          description: Move result
+components:
+  securitySchemes:
+    Bearer:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT

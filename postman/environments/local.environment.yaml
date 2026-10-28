@@ -1,0 +1,8 @@
+name: local
+values:
+  - key: gateway_base_url
+    value: 'http://127.0.0.1:5100'
+    enabled: true
+  - key: level_id
+    value: '001'
+    enabled: true

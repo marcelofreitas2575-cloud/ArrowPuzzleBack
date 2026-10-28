@@ -77,3 +77,5 @@ deploy/backups/*.zip
 **/appsettings.*.local.json
 *.pem
 *.p12
+deploy/dapr/certs/issuer/
+deploy/dapr/certs/**/*.key

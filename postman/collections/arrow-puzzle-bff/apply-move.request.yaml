@@ -1,0 +1,14 @@
+$kind: http-request
+name: Apply move
+method: POST
+url: '{{gateway_base_url}}/api/v1/sessions/{{session_id}}/moves'
+order: 5000
+headers:
+  - key: Content-Type
+    value: application/json
+body:
+  type: json
+  content: |-
+    {
+      "arrowId": "{{arrow_id}}"
+    }
