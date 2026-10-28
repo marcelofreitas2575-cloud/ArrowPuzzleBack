@@ -2,6 +2,7 @@
   <ItemGroup>
     <ProjectReference Include="..\ArrowPuzzle.Gateway.Application\ArrowPuzzle.Gateway.Application.csproj" />
     <ProjectReference Include="..\..\..\shared\ArrowPuzzle.Protos\ArrowPuzzle.Protos.csproj" />
+    <ProjectReference Include="..\..\..\shared\ArrowPuzzle.BuildingBlocks\ArrowPuzzle.BuildingBlocks.csproj" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Dapr.Client" />

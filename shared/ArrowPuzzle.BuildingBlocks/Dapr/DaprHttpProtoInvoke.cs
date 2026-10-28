@@ -1,3 +1,4 @@
+using ArrowPuzzle.BuildingBlocks.Observability;
 using Google.Protobuf;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
@@ -42,6 +43,11 @@ public static class DaprHttpProtoInvoke
                 catch (ArgumentException ex)
                 {
                     httpContext.Response.StatusCode = StatusCodes.Status400BadRequest;
+                    await httpContext.Response.WriteAsync(ex.Message, cancellationToken);
+                }
+                catch (Exception ex) when (ex.GetType().Name == "SessionAccessDeniedException")
+                {
+                    httpContext.Response.StatusCode = StatusCodes.Status403Forbidden;
                     await httpContext.Response.WriteAsync(ex.Message, cancellationToken);
                 }
             });
