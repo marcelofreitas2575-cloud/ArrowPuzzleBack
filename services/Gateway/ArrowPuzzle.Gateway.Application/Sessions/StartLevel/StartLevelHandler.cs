@@ -18,6 +18,7 @@ public sealed class StartLevelHandler : IRequestHandler<StartLevelCommand, Sessi
     public async Task<SessionDto> Handle(StartLevelCommand request, CancellationToken cancellationToken)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(request.LevelId);
+        ArgumentException.ThrowIfNullOrWhiteSpace(request.UserId);
 
         var level = await _levelCatalog.GetLevelAsync(request.LevelId, cancellationToken);
         if (level is null)
@@ -25,6 +26,10 @@ public sealed class StartLevelHandler : IRequestHandler<StartLevelCommand, Sessi
             throw new KeyNotFoundException($"Level '{request.LevelId}' was not found.");
         }
 
-        return await _gameSession.CreateSessionAsync(level.Board, cancellationToken);
+        return await _gameSession.CreateSessionAsync(
+            request.UserId,
+            request.LevelId,
+            level.Board,
+            cancellationToken);
     }
 }

@@ -22,9 +22,16 @@ public static class GameSessionDaprInvokeEndpoints
                     throw new ArgumentException("initial_board is required.");
                 }
 
+                if (string.IsNullOrWhiteSpace(request.UserId) || string.IsNullOrWhiteSpace(request.LevelId))
+                {
+                    throw new ArgumentException("user_id and level_id are required.");
+                }
+
                 var board = BoardProtoMapper.ToDomain(request.InitialBoard);
                 var mediator = app.Services.GetRequiredService<IMediator>();
-                var result = await mediator.Send(new CreateSessionCommand(board), cancellationToken);
+                var result = await mediator.Send(
+                    new CreateSessionCommand(request.UserId, request.LevelId, board),
+                    cancellationToken);
 
                 return new CreateSessionResponse
                 {
@@ -37,13 +44,18 @@ public static class GameSessionDaprInvokeEndpoints
             "/dapr/apply-move",
             async (request, cancellationToken) =>
             {
+                if (string.IsNullOrWhiteSpace(request.UserId))
+                {
+                    throw new ArgumentException("user_id is required.");
+                }
+
                 var sessionId = SessionId.From(request.SessionId);
                 var arrowId = ArrowId.From(request.ArrowId);
                 var mediator = app.Services.GetRequiredService<IMediator>();
                 try
                 {
                     var result = await mediator.Send(
-                        new ApplyMoveCommand(sessionId, arrowId),
+                        new ApplyMoveCommand(sessionId, request.UserId, arrowId),
                         cancellationToken);
 
                     return new ApplyMoveResponse
@@ -68,9 +80,16 @@ public static class GameSessionDaprInvokeEndpoints
             "/dapr/get-session",
             async (request, cancellationToken) =>
             {
+                if (string.IsNullOrWhiteSpace(request.UserId))
+                {
+                    throw new ArgumentException("user_id is required.");
+                }
+
                 var sessionId = SessionId.From(request.SessionId);
                 var mediator = app.Services.GetRequiredService<IMediator>();
-                var session = await mediator.Send(new GetSessionQuery(sessionId), cancellationToken);
+                var session = await mediator.Send(
+                    new GetSessionQuery(sessionId, request.UserId),
+                    cancellationToken);
 
                 if (session is null)
                 {
@@ -81,6 +100,8 @@ public static class GameSessionDaprInvokeEndpoints
                 {
                     SessionId = session.Id.ToString(),
                     Board = BoardProtoMapper.ToProto(session.Board),
+                    LevelId = session.LevelId,
+                    IsPuzzleComplete = session.IsPuzzleComplete,
                 };
             });
 

@@ -15,10 +15,12 @@ public sealed class CreateSessionHandler : IRequestHandler<CreateSessionCommand,
 
     public async Task<CreateSessionResult> Handle(CreateSessionCommand request, CancellationToken cancellationToken)
     {
+        ArgumentException.ThrowIfNullOrWhiteSpace(request.UserId);
+        ArgumentException.ThrowIfNullOrWhiteSpace(request.LevelId);
         ArgumentNullException.ThrowIfNull(request.InitialBoard);
 
         var sessionId = SessionId.New();
-        var session = new PlaySession(sessionId, request.InitialBoard);
+        var session = new PlaySession(sessionId, request.UserId.Trim(), request.LevelId.Trim(), request.InitialBoard);
 
         await _repository.AddAsync(session, cancellationToken);
 

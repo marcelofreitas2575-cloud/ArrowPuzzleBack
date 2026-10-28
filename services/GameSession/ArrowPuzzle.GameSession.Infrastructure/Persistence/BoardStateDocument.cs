@@ -35,5 +35,11 @@ internal sealed class GameSessionDocument
 {
     public string SessionId { get; set; } = string.Empty;
 
+    public string UserId { get; set; } = string.Empty;
+
+    public string LevelId { get; set; } = string.Empty;
+
+    public bool IsPuzzleComplete { get; set; }
+
     public BoardStateDocument Board { get; set; } = new();
 }

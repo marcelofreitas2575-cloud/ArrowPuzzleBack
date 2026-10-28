@@ -17,10 +17,17 @@ class PlayerProgressRepository(
         return levelId
     }
 
-    suspend fun completeLevelAndNextPlayable(authorization: String, completedLevelId: String): String {
+    suspend fun completeLevelAndNextPlayable(
+        authorization: String,
+        completedLevelId: String,
+        sessionId: String,
+    ): String {
         val progress = ServiceLocator.gameApi.completeLevel(
             authorization = authorization,
-            body = CompleteLevelRequest(levelId = completedLevelId.trim()),
+            body = CompleteLevelRequest(
+                levelId = completedLevelId.trim(),
+                sessionId = sessionId.trim(),
+            ),
         )
         val nextLevelId = LevelProgression.nextPlayableLevelId(progress.completedLevelIds)
         localCache.saveCurrentLevelId(nextLevelId)

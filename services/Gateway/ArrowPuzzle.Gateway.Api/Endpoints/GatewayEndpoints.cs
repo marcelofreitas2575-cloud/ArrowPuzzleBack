@@ -3,6 +3,7 @@ using ArrowPuzzle.Gateway.Api.Authentication;
 using ArrowPuzzle.Gateway.Application.Levels.GetLevel;
 using ArrowPuzzle.Gateway.Application.Progress.CompleteLevel;
 using ArrowPuzzle.Gateway.Application.Progress.GetProgress;
+using ArrowPuzzle.Gateway.Application.Sessions;
 using ArrowPuzzle.Gateway.Application.Sessions.ApplyMove;
 using ArrowPuzzle.Gateway.Application.Sessions.GetSession;
 using ArrowPuzzle.Gateway.Application.Sessions.StartLevel;
@@ -59,9 +60,21 @@ public static class GatewayEndpoints
         {
             var userId = UserClaims.GetSubjectId(user);
             var progress = await mediator.Send(
-                new CompleteLevelCommand(userId, body.LevelId),
+                new CompleteLevelCommand(userId, body.LevelId, body.SessionId),
                 cancellationToken);
             return Results.Ok(progress);
+        }
+        catch (LevelCompletionNotVerifiedException ex)
+        {
+            return Results.BadRequest(new { error = ex.Message });
+        }
+        catch (KeyNotFoundException ex)
+        {
+            return Results.NotFound(new { error = ex.Message });
+        }
+        catch (SessionAccessDeniedException ex)
+        {
+            return Results.Json(new { error = ex.Message }, statusCode: StatusCodes.Status403Forbidden);
         }
         catch (Exception ex) when (ex is ArgumentException)
         {
@@ -96,6 +109,7 @@ public static class GatewayEndpoints
 
     private static async Task<IResult> StartSessionAsync(
         StartSessionRequest body,
+        ClaimsPrincipal user,
         IMediator mediator,
         CancellationToken cancellationToken)
     {
@@ -106,7 +120,8 @@ public static class GatewayEndpoints
 
         try
         {
-            var session = await mediator.Send(new StartLevelCommand(body.LevelId), cancellationToken);
+            var userId = UserClaims.GetSubjectId(user);
+            var session = await mediator.Send(new StartLevelCommand(body.LevelId, userId), cancellationToken);
             return Results.Created($"/api/v1/sessions/{session.SessionId}", session);
         }
         catch (KeyNotFoundException ex)
@@ -123,12 +138,21 @@ public static class GatewayEndpoints
         }
     }
 
-    private static async Task<IResult> GetSessionAsync(string sessionId, IMediator mediator, CancellationToken cancellationToken)
+    private static async Task<IResult> GetSessionAsync(
+        string sessionId,
+        ClaimsPrincipal user,
+        IMediator mediator,
+        CancellationToken cancellationToken)
     {
         try
         {
-            var session = await mediator.Send(new GetSessionQuery(sessionId), cancellationToken);
+            var userId = UserClaims.GetSubjectId(user);
+            var session = await mediator.Send(new GetSessionQuery(sessionId, userId), cancellationToken);
             return session is null ? Results.NotFound() : Results.Ok(session);
+        }
+        catch (SessionAccessDeniedException ex)
+        {
+            return Results.Json(new { error = ex.Message }, statusCode: StatusCodes.Status403Forbidden);
         }
         catch (Exception ex) when (ex is ArgumentException)
         {
@@ -143,6 +167,7 @@ public static class GatewayEndpoints
     private static async Task<IResult> ApplyMoveAsync(
         string sessionId,
         ApplyMoveRequest body,
+        ClaimsPrincipal user,
         IMediator mediator,
         CancellationToken cancellationToken)
     {
@@ -153,8 +178,9 @@ public static class GatewayEndpoints
 
         try
         {
+            var userId = UserClaims.GetSubjectId(user);
             var result = await mediator.Send(
-                new ApplyMoveCommand(sessionId, body.ArrowId),
+                new ApplyMoveCommand(sessionId, userId, body.ArrowId),
                 cancellationToken);
 
             return Results.Ok(result);
@@ -162,6 +188,10 @@ public static class GatewayEndpoints
         catch (KeyNotFoundException)
         {
             return Results.NotFound();
+        }
+        catch (SessionAccessDeniedException ex)
+        {
+            return Results.Json(new { error = ex.Message }, statusCode: StatusCodes.Status403Forbidden);
         }
         catch (Exception ex) when (ex is ArgumentException)
         {
@@ -192,5 +222,5 @@ public static class GatewayEndpoints
 
     public sealed record ApplyMoveRequest(string ArrowId);
 
-    public sealed record CompleteLevelRequest(string LevelId);
+    public sealed record CompleteLevelRequest(string LevelId, string? SessionId = null);
 }

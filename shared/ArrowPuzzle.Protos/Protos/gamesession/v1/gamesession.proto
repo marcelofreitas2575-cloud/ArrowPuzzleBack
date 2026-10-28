@@ -49,6 +49,8 @@ message Arrow {
 
 message CreateSessionRequest {
   Board initial_board = 1;
+  string user_id = 2;
+  string level_id = 3;
 }
 
 message CreateSessionResponse {
@@ -59,6 +61,7 @@ message CreateSessionResponse {
 message ApplyMoveRequest {
   string session_id = 1;
   string arrow_id = 2;
+  string user_id = 3;
 }
 
 message ApplyMoveResponse {
@@ -70,9 +73,12 @@ message ApplyMoveResponse {
 
 message GetSessionRequest {
   string session_id = 1;
+  string user_id = 2;
 }
 
 message GetSessionResponse {
   string session_id = 1;
   Board board = 2;
+  bool is_puzzle_complete = 3;
+  string level_id = 4;
 }

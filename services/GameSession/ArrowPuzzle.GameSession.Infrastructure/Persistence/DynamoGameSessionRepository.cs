@@ -93,6 +93,9 @@ public sealed class DynamoGameSessionRepository : IGameSessionRepository
         new()
         {
             SessionId = session.Id.ToString(),
+            UserId = session.UserId,
+            LevelId = session.LevelId,
+            IsPuzzleComplete = session.IsPuzzleComplete,
             Board = BoardStateMapper.ToDocument(session.Board),
         };
 
@@ -104,7 +107,12 @@ public sealed class DynamoGameSessionRepository : IGameSessionRepository
 
         var sessionId = SessionId.From(document.SessionId);
         var board = BoardStateMapper.ToDomain(document.Board);
-        return new PlaySession(sessionId, board);
+        return new PlaySession(
+            sessionId,
+            document.UserId ?? string.Empty,
+            document.LevelId ?? string.Empty,
+            board,
+            document.IsPuzzleComplete);
     }
 
     private static Dictionary<string, AttributeValue> CreateKey(string partitionKey) =>

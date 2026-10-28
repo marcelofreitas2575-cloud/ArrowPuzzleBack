@@ -3,4 +3,4 @@ using MediatR;
 
 namespace ArrowPuzzle.Gateway.Application.Sessions.StartLevel;
 
-public sealed record StartLevelCommand(string LevelId) : IRequest<SessionDto>;
+public sealed record StartLevelCommand(string LevelId, string UserId) : IRequest<SessionDto>;

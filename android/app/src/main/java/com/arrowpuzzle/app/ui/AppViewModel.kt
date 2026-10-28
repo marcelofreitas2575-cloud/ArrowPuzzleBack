@@ -294,10 +294,11 @@ class AppViewModel(application: Application) : AndroidViewModel(application) {
     private suspend fun onPuzzleWon() {
         val token = bearerToken ?: return
         val levelId = _uiState.value.currentLevelId ?: return
+        val sessionId = _uiState.value.sessionId ?: return
         _uiState.update { it.copy(isLoading = true, errorMessage = null) }
         delay(400)
         runCatching {
-            playerProgressRepository.completeLevelAndNextPlayable(token, levelId)
+            playerProgressRepository.completeLevelAndNextPlayable(token, levelId, sessionId)
         }.onSuccess { nextLevel ->
             startLevelInternal(nextLevel)
         }.onFailure { ex ->

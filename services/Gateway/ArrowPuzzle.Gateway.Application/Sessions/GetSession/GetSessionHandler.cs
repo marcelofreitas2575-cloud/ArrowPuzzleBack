@@ -16,6 +16,7 @@ public sealed class GetSessionHandler : IRequestHandler<GetSessionQuery, Session
     public Task<SessionDto?> Handle(GetSessionQuery request, CancellationToken cancellationToken)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(request.SessionId);
-        return _gameSession.GetSessionAsync(request.SessionId, cancellationToken);
+        ArgumentException.ThrowIfNullOrWhiteSpace(request.UserId);
+        return _gameSession.GetSessionAsync(request.SessionId, request.UserId, cancellationToken);
     }
 }

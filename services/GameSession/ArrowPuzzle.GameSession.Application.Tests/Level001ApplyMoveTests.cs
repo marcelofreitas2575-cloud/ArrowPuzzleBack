@@ -32,9 +32,9 @@ public class Level001ApplyMoveTests
             7,
             11,
             Level001TestBoard.Create().Arrows.Where(a => a.Id == arrowId).ToList());
-        var created = await mediator.Send(new CreateSessionCommand(board));
+        var created = await mediator.Send(new CreateSessionCommand("user-1", "001", board));
 
-        var move = await mediator.Send(new ApplyMoveCommand(created.SessionId, arrowId));
+        var move = await mediator.Send(new ApplyMoveCommand(created.SessionId, "user-1", arrowId));
 
         Assert.Equal(SlideOutcome.ExitedBoard, move.Outcome);
         Assert.True(move.IsSuccess);

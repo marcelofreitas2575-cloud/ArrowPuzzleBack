@@ -27,8 +27,15 @@ public sealed class GameSessionGrpcService : GameSessionService.GameSessionServi
             throw new RpcException(new Status(StatusCode.InvalidArgument, "initial_board is required."));
         }
 
+        if (string.IsNullOrWhiteSpace(request.UserId) || string.IsNullOrWhiteSpace(request.LevelId))
+        {
+            throw new RpcException(new Status(StatusCode.InvalidArgument, "user_id and level_id are required."));
+        }
+
         var board = BoardProtoMapper.ToDomain(request.InitialBoard);
-        var result = await _mediator.Send(new CreateSessionCommand(board), context.CancellationToken);
+        var result = await _mediator.Send(
+            new CreateSessionCommand(request.UserId, request.LevelId, board),
+            context.CancellationToken);
 
         return new CreateSessionResponse
         {
@@ -43,8 +50,13 @@ public sealed class GameSessionGrpcService : GameSessionService.GameSessionServi
         {
             var sessionId = SessionId.From(request.SessionId);
             var arrowId = ArrowId.From(request.ArrowId);
+            if (string.IsNullOrWhiteSpace(request.UserId))
+            {
+                throw new RpcException(new Status(StatusCode.InvalidArgument, "user_id is required."));
+            }
+
             var result = await _mediator.Send(
-                new ApplyMoveCommand(sessionId, arrowId),
+                new ApplyMoveCommand(sessionId, request.UserId, arrowId),
                 context.CancellationToken);
 
             return new ApplyMoveResponse
@@ -59,6 +71,10 @@ public sealed class GameSessionGrpcService : GameSessionService.GameSessionServi
         {
             throw new RpcException(new Status(StatusCode.NotFound, ex.Message));
         }
+        catch (SessionAccessDeniedException ex)
+        {
+            throw new RpcException(new Status(StatusCode.PermissionDenied, ex.Message));
+        }
         catch (Exception ex) when (ex is ArgumentException or FormatException)
         {
             throw new RpcException(new Status(StatusCode.InvalidArgument, ex.Message));
@@ -69,8 +85,15 @@ public sealed class GameSessionGrpcService : GameSessionService.GameSessionServi
     {
         try
         {
+            if (string.IsNullOrWhiteSpace(request.UserId))
+            {
+                throw new RpcException(new Status(StatusCode.InvalidArgument, "user_id is required."));
+            }
+
             var sessionId = SessionId.From(request.SessionId);
-            var session = await _mediator.Send(new GetSessionQuery(sessionId), context.CancellationToken);
+            var session = await _mediator.Send(
+                new GetSessionQuery(sessionId, request.UserId),
+                context.CancellationToken);
 
             if (session is null)
             {
@@ -81,7 +104,13 @@ public sealed class GameSessionGrpcService : GameSessionService.GameSessionServi
             {
                 SessionId = session.Id.ToString(),
                 Board = BoardProtoMapper.ToProto(session.Board),
+                LevelId = session.LevelId,
+                IsPuzzleComplete = session.IsPuzzleComplete,
             };
+        }
+        catch (SessionAccessDeniedException ex)
+        {
+            throw new RpcException(new Status(StatusCode.PermissionDenied, ex.Message));
         }
         catch (Exception ex) when (ex is ArgumentException or FormatException)
         {

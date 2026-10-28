@@ -17,7 +17,11 @@ public sealed record BoardDto(
 
 public sealed record LevelDto(string LevelId, BoardDto Board);
 
-public sealed record SessionDto(string SessionId, BoardDto Board);
+public sealed record SessionDto(
+    string SessionId,
+    BoardDto Board,
+    string LevelId,
+    bool IsPuzzleComplete);
 
 public sealed record ApplyMoveResultDto(
     string Outcome,

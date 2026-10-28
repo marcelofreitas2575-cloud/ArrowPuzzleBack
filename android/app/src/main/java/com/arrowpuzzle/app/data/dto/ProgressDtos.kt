@@ -12,4 +12,5 @@ data class PlayerProgressResponse(
 @JsonClass(generateAdapter = true)
 data class CompleteLevelRequest(
     @Json(name = "levelId") val levelId: String,
+    @Json(name = "sessionId") val sessionId: String,
 )

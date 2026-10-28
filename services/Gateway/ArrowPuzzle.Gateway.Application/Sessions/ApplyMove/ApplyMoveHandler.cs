@@ -16,8 +16,13 @@ public sealed class ApplyMoveHandler : IRequestHandler<ApplyMoveCommand, ApplyMo
     public Task<ApplyMoveResultDto> Handle(ApplyMoveCommand request, CancellationToken cancellationToken)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(request.SessionId);
+        ArgumentException.ThrowIfNullOrWhiteSpace(request.UserId);
         ArgumentException.ThrowIfNullOrWhiteSpace(request.ArrowId);
 
-        return _gameSession.ApplyMoveAsync(request.SessionId, request.ArrowId, cancellationToken);
+        return _gameSession.ApplyMoveAsync(
+            request.SessionId,
+            request.UserId,
+            request.ArrowId,
+            cancellationToken);
     }
 }

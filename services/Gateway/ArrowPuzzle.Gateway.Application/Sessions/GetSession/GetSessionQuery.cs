@@ -3,4 +3,4 @@ using MediatR;
 
 namespace ArrowPuzzle.Gateway.Application.Sessions.GetSession;
 
-public sealed record GetSessionQuery(string SessionId) : IRequest<SessionDto?>;
+public sealed record GetSessionQuery(string SessionId, string UserId) : IRequest<SessionDto?>;
