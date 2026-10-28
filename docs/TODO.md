@@ -20,7 +20,7 @@
 | A3 | ADRs: Dapr HTTP BFF; sessão + `complete` verificado | `docs/adr/` |
 | A4 | Roadmap (mTLS Dapr K8s, OTLP/Grafana, AWS CD) | `docs/ROADMAP.md` ou README |
 
-Depois disso → **Opção B** (Git: commits, PR, push).
+**Opção B (Git):** concluída — `main` em `origin` no commit `15f61cc` (fast-forward de `feat/session-observability-and-ci`).
 
 ---
 
